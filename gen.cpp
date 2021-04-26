@@ -12,13 +12,13 @@
 #include <sstream>
 using namespace std;
 
-//TODO Figuire out error handling
+
+
 int main(int argc, char const *argv[])
 {
     while (1)
     {
         string input;
-        cout << "Please enter input:" << endl;
         getline(cin, input);
 
         stringstream ss(input);
@@ -30,25 +30,29 @@ int main(int argc, char const *argv[])
             if (!isdigit(previous_word[0]))
             {
                 if (previous_word == "Family")
-                    cout << "Family " << word << endl; //insert family vertex
-                if (previous_word == "Husband")
-                    cout << "Husband " << word << endl; //introdce Husband person node to family
-                if (previous_word == "Wife")
-                    cout << "Wife " << word << endl; //insert wife person node to family
-                if (previous_word == "Child")
-                    cout << "Child " << word << endl; //insert child node to family
+                    cout << "Fam " << word << endl; //insert family vertex
+                else if (previous_word == "Husband")
+                    cout << "Hubby " << word << endl; //introdce Husband person node to family
+                else if (previous_word == "Wife")
+                    cout << "Wifey " << word << endl; //insert wife person node to family
+                else if (previous_word == "Child")
+                    cout << "Childe " << word << endl; //insert child node to family
+                else if (previous_word == "Relate")
+                    relate_first = word;
+                else if (word != "Family" || word != "Husband" || word != "Wife" || word != "Child" || word != "Relate")
+                {
+                    cout << "Unknown command: " << word << endl;
+                }
                 previous_word = word;
             }
             else
             {
                 previous_word = word;
-                previous_word = word;
                 if (!relate_first.empty())
                 {
-                    cout << "Relate " << relate_first << " " << word << endl;
+                    cout << "Related " << relate_first << " " << word << endl; // Relate these guys
                     relate_first = "";
                 }
-                continue;
             }
         }
     }
