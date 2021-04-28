@@ -59,7 +59,7 @@ void familyTree::insertTree(string family_id, vector<int> family)
         }
     }
     tree[stoi(family_id)] = family;
-    cout << "Family " << family_id << " has huband " << family[HUSBAND] << ", wife " << family[WIFE] << ", and children ";
+    cout << "Family " << family_id << " has husband " << family[HUSBAND] << ", wife " << family[WIFE] << ", and children ";
     for (auto i : family)
     {
         cout << i << " ";
