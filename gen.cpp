@@ -15,54 +15,6 @@ using namespace std;
 const int HUSBAND = 0;
 const int WIFE = 1;
 
-/* class person
-{
-private:
-    int id;
-    int married;
-    int parent; 
-
-public:
-    friend class family;
-    person();
-};
-
-//Parent Constructor
-person::person()
-{
-    id = -1;
-    married = NULL; 
-    parent = NULL; 
-} */
-
-/* class family
-{
-private:
-    int id;
-    person *husband;
-    person *wife;
-    vector<person *> children;
-
-public:
-    family(int family_id, int husband_id, int wife_id, vector<int> children_id);
-};
-
-family::family(int family_id, int husband_id, int wife_id, vector<int> children_id)
-{
-    person *hubby = new person();
-    person *wifey = new person();
-    
-
-    id = family_id;
-    husband = hubby;
-    wife = wifey;
-    if(!children_id.empty()){
-        for(auto id: children_id){
-            children.push_back(new person(id, husband_id, wife_id));
-        }
-    }
-} */
-
 class familyTree
 {
 private:
