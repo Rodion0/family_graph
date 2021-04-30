@@ -25,13 +25,14 @@ private:
     vector<int> wives;
     vector<int> children;
     vector<int> parents;
+    vector<int> family_ids;
 
 public:
     familyTree();
-    void insertTree(string family_id, vector<int> family);
-    void insertHusband(string husband_id) { husbands[stoi(husband_id)]++; }
-    void insertWife(string wife_id) { wives[stoi(wife_id)]++; }
-    void insertChild(string children_id) { children[stoi(children_id)]++; }
+    void insertTree(string family_id, string husband_id, string wife_id, vector<int> child_id, vector<int> family);
+    void insertHusband(vector<int> &family, string husband_id);
+    void insertWife(vector<int> &family, string wife_id);
+    void insertChild(vector<int> &family, string children_id);
     void relate(int id1, int id2);
     bool connected(int id1, int id2);
     int findRoot(int id);
@@ -42,36 +43,92 @@ public:
 
 familyTree::familyTree()
 {
-    husbands.assign(NUMBER_OF_FAMILIES, 0);
-    wives.assign(NUMBER_OF_FAMILIES, 0);
-    children.assign(NUMBER_OF_FAMILIES, 0);
+    tree.resize(NUMBER_OF_FAMILIES, vector<int>(NUMBER_OF_FAMILIES));
+    husbands.resize(NUMBER_OF_FAMILIES);
+    wives.resize(NUMBER_OF_FAMILIES);
+    children.resize(NUMBER_OF_FAMILIES);
+    family_ids.resize(NUMBER_OF_FAMILIES);
 }
 
-void familyTree::insertTree(string family_id, vector<int> family)
+void familyTree::insertHusband(vector<int> &family, string husband_id)
 {
-    if (husbands[family[HUSBAND]] > 0)
+    //cout << "Husband ID in insertHusband: " << husband_id << endl;
+    family.emplace(family.begin(), stoi(husband_id));
+    //cout << "Husband is good" << endl;
+}
+
+void familyTree::insertWife(vector<int> &family, string wife_id)
+{
+    //cout << "Wife ID in insertWife: " << wife_id << endl;
+    family.emplace(family.begin() + 1, stoi(wife_id));
+    //cout << "Wife is good" << endl;
+}
+
+void familyTree::insertChild(vector<int> &family, string children_id)
+{
+    //cout << "Child ID in inertChildren: " << children_id << endl;
+    family.push_back(stoi(children_id));
+    //cout << "CHild is good" << endl;
+}
+
+void familyTree::insertTree(string family_id, string husband_id, string wife_id, vector<int> child_id, vector<int> family)
+{
+    //cout << husband_id << " " << wife_id << endl;
+    if (husbands[family[HUSBAND]] > 0 && stoi(husband_id) != 0)
     {
-        cout << "Husband " << family[HUSBAND] << " is already wed." << endl;
+        cout << "\t Husband " << family[HUSBAND] << " is already wed." << endl;
         return;
     }
-    else if (wives[family[WIFE]] > 0)
+    else if (wives[family[WIFE]] > 0 && stoi(wife_id) != 0)
     {
-        cout << "Wife " << family[WIFE] << " is already wed." << endl;
+        cout << "\t Wife " << family[WIFE] << " is already wed." << endl;
         return;
     }
-    for (int i = 2; i < family.size(); i++)
+    else if (family_ids[stoi(family_id)] > 0 && stoi(family_id) != 0)
     {
-        if (children[family[i]] > 0)
+        cout << "\t Family " << family_id << " is already inserted." << endl;
+        return;
+    }
+    //cout << "Parents created" << endl;
+    for (int i = 0; i < child_id.size(); i++)
+    {
+        if (children[child_id[i]] > 0 && child_id[i] != 0)
         {
-            cout << "Child " << family[i] << "already parented." << endl;
+            cout << "\t Child " << child_id[i] << " is already parented." << endl;
             return;
         }
     }
-    tree[stoi(family_id)] = family;
-    cout << "Family " << family_id << " has husband " << family[HUSBAND] << ", wife " << family[WIFE] << ", and children ";
-    for (auto i : family)
+
+    //cout << "New Value Created ";
+    //cout << "Husband ID: " << husband_id << endl;
+    husbands[stoi(husband_id)]++;
+    //cout << "Husband incremented" << endl;
+    wives[stoi(wife_id)]++;
+    family_ids[stoi(family_id)]++;
+    //cout << "Wife is incremented" << endl;
+    for (auto i : child_id)
     {
-        cout << i << " ";
+        children[i]++;
+    }
+    //cout << "All vakues have been incremented" << endl;
+    for (int i = 0; i < tree[stoi(family_id)].size(); i++)
+    {
+        tree[stoi(family_id)][i] = family[i];
+    }
+
+    //tree.insert((tree.begin() + stoi(family_id)), family);
+    //cout << "Family is inserted into tree" << endl;
+    cout << "Family " << family_id << " has husband " << family[HUSBAND] << ", wife " << family[WIFE] << ", and children";
+    for (int i = 2; i < family.size(); i++)
+    {
+        if (family[i] == 0)
+        {
+            continue;
+        }
+        else
+        {
+            cout << " " << family[i];
+        }
     }
     cout << "." << endl;
 }
@@ -82,13 +139,17 @@ int familyTree::findRoot(int id)
     {
         return id;
     }
-    return parents[id] = findRoot(parents[id]);
+    return findRoot(parents[id]);
 }
 
 void familyTree::unionRoots(int id1, int id2)
 {
+    //cout << "I am in unionRoot" << endl;
     id1 = findRoot(id1);
+    // cout << "Ive done the first find root" << endl;
     id2 = findRoot(id2);
+    //cout << "I've done the second find root" << endl;
+    //cout << id1 << " " << id2 << endl;
     if (id1 != id2)
     {
         parents[id2] = id1;
@@ -97,26 +158,28 @@ void familyTree::unionRoots(int id1, int id2)
 
 bool familyTree::connected(int id1, int id2)
 {
+    parents.resize(NUMBER_OF_FAMILIES);
     //Do the Union Find
     for (int i = 0; i < NUMBER_OF_FAMILIES; i++)
     {
         parents[i] = i;
     }
-    for (int i = 0; i < tree.size(); i++)
+    //cout << "Pushed back all the parents" << endl;
+    for (int i = tree.size() - 1; i > 0; i--)
     {
-        for (int j = tree.size() - 1; i > 0; i++)
+        for (int j = tree[i].size() - 1; j > 0; j--)
         {
             unionRoots(tree[i][j], tree[i][j - 1]);
         }
     }
+    //cout << "woo union roots worked" << endl;
     return parents[id1] == parents[id2];
 }
 
 void familyTree::bfs(int sourceId, int destinationID, vector<int> &path)
 {
     vector<int> queue;
-    vector<bool> discovered;
-    discovered.assign(NUMBER_OF_FAMILIES, false);
+    vector<bool> discovered(NUMBER_OF_FAMILIES);
     discovered[sourceId] = true;
     queue.push_back(sourceId);
     while (!queue.empty())
@@ -127,7 +190,7 @@ void familyTree::bfs(int sourceId, int destinationID, vector<int> &path)
         {
             if (discovered[tree[first][i]] == false)
             {
-                discovered[tree[first][i]] == true;
+                discovered[tree[first][i]] = true;
                 path[tree[first][i]] = first;
                 queue.push_back(tree[first][i]);
                 if (tree[first][i] == destinationID)
@@ -145,26 +208,26 @@ void familyTree::printPath(int id1, int id2)
     vector<int> path;
     int traveler = id2;
 
-    path.assign(NUMBER_OF_FAMILIES, INT_MIN);
+    path.resize(NUMBER_OF_FAMILIES);
     bfs(id1, id2, path);
 
     shortPath.push_back(traveler);
-    while (path[traveler] != INT_MIN)
+    while (path[traveler] != 0)
     {
         shortPath.push_back(path[traveler]);
         traveler = path[traveler];
     }
 
     cout << "Relation: ";
-    for (int i = 0; i < path.size(); i++)
+    for (int i = 0; i < shortPath.size(); i++)
     {
         if ((i % 2) == 0)
         {
-            cout << "-> family " << shortPath[i];
+            cout << "person " << shortPath[i];
         }
         else
         {
-            cout << "person " << shortPath[i];
+            cout << " -> family " << shortPath[i] << " -> ";
         }
     }
     cout << endl;
@@ -187,18 +250,19 @@ void familyTree::relate(int id1, int id2)
 int main(int argc, char const *argv[])
 {
     familyTree tree = familyTree();
-    while (1)
+    while (cin)
     {
         string input, family_id, husband_id, wife_id;
-        vector<int> child_id, family;
+        vector<int> family(NUMBER_OF_FAMILIES), child_id(NUMBER_OF_FAMILIES);
         getline(cin, input);
 
         stringstream ss(input);
         string word = "";
-        string previous_word = "";
-        string relate_first;
+        string previous_word = " ";
+        string relate_first = "";
         while (ss >> word)
         {
+            //cout << word << endl;
             if (!isdigit(previous_word[0]))
             {
                 if (previous_word == "Family")
@@ -208,17 +272,22 @@ int main(int argc, char const *argv[])
                 else if (previous_word == "Husband")
                 {
                     husband_id = word;
-                    tree.insertHusband(husband_id);
+                    tree.insertHusband(family, word);
+                    //cout << "Inserted Husband" << endl;
                 }
                 else if (previous_word == "Wife")
                 {
                     wife_id = word;
-                    tree.insertWife(wife_id);
+                    tree.insertWife(family, word);
+                    //cout << "Inserted Wife" << endl;
                 }
                 else if (previous_word == "Child")
                 {
+                    //cout << "Child Word" << word << endl;
                     child_id.push_back(stoi(word));
-                    tree.insertChild(word);
+                    //cout << "Main Child" << endl;
+                    tree.insertChild(family, word);
+                    //cout << "Inserted Child" << endl;
                 }
                 else if (previous_word == "Relate")
                 {
@@ -235,12 +304,17 @@ int main(int argc, char const *argv[])
                 previous_word = word;
                 if (!relate_first.empty())
                 {
-                    tree.relate(stoi(word), stoi(relate_first)); // Relate these guys
+                    //cout << word << " " << relate_first << endl;
+                    tree.relate(stoi(relate_first), stoi(word)); // Relate these guys
+                    //cout << "Main Relate" << endl;
                     relate_first = "";
                 }
             }
         }
-        tree.insertTree(family_id, family);
+        if (!husband_id.empty() && !wife_id.empty())
+        {
+            tree.insertTree(family_id, husband_id, wife_id, child_id, family);
+        }
     }
     return 0;
 }
